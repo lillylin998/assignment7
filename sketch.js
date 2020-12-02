@@ -1,14 +1,105 @@
 
-function preload() {
+let facemesh;
+let video;
+let predictions = [];
+let r,g,b;
+let allPixels;
+//let keypoints = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148];
+//let verticesX = [];
+//let verticesY = [];
+//let poly = [];
 
-} 
+
 
 function setup() {
+  pixelDensity(1);
   createCanvas(640, 480);
-}
-   // display(data,10);
-function draw() { 
-  background(220);
+  video = createCapture(VIDEO);
+  video.size(width, height);
 
+  facemesh = ml5.facemesh(video, modelReady);
+
+  // This sets up an event that fills the global variable "predictions"
+  // with an array every time new predictions are made
+  facemesh.on("predict", results => {
+    predictions = results;
+  });    
+
+  // Hide the video element, and just show the canvas
+  video.hide();
+    allPixels = Array(640);
+    
+//    for(let i=0; i<allPixels.length; i++){
+//        allPixels[i] = Array(480);
+//    }
+//    
+//    for (let i=0; i<width; i++){
+//        for (let j=0; j<height; j++){
+//            allPixels[i][j] = false;
+//        }
+//    }
+   // print(allPixels);
 }
 
+function modelReady() {
+  console.log("Model ready!");
+}
+
+function draw() {
+  translate(video.width, 0);
+  scale(-1.0,1.0);
+  image(video, 0, 0, width, height);
+ 
+   // print(predictions);
+   loadPixels();
+    bw();
+    faceColor();
+    updatePixels();
+   
+}
+
+
+
+function faceColor(){
+    for(let i=0; i<predictions.length; i++){
+        let allpositions = predictions[i].scaledMesh;
+        //print(allpositions);
+        
+        for (let j=0; j<allpositions.length; j++){
+            let x = floor(allpositions[j][0]);
+            let y = floor(allpositions[j][1]);
+            
+            let ind = (x+y*width)*4;
+            pixels[ind+0] = r;
+            pixels[ind+1] = g;
+            pixels[ind+2] = b;
+            pixels[ind+3] = 255;
+         // allPixels[x][y] = true;
+        }
+        
+    }
+    
+}
+
+//this function is from the example code in class
+function bw(){
+    for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+            
+        if (allPixels[x][y] === false){
+          var index = (x + y * width)*4;
+        
+          r = pixels[index+0];
+          g = pixels[index+1];
+          b = pixels[index+2];
+          let a = pixels[index+3];   
+          
+          let avg = (r + g + b) / 3;
+          
+          pixels[index+0] = avg;
+          pixels[index+1] = avg;
+          pixels[index+2] = avg;
+        }
+        }
+      }
+}
