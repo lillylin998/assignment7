@@ -112,6 +112,7 @@ function bw(){
           pixels[index+0] = avg;
           pixels[index+1] = avg;
           pixels[index+2] = avg;
+          pixels[index+3] = 100;
             
         }
         }
