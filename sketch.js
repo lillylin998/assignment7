@@ -4,6 +4,8 @@ let video;
 let predictions = [];
 let r,g,b;
 let allPixels;
+let model = false;
+let x = 0;
 //let keypoints = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148];
 //let verticesX = [];
 //let verticesY = [];
@@ -13,9 +15,10 @@ let allPixels;
 
 function setup() {
   pixelDensity(1);
-  createCanvas(640, 480);
+  createCanvas(640, windowHeight);
+
   video = createCapture(VIDEO);
-  video.size(width, height);
+  video.size(640, 480);
 
   facemesh = ml5.facemesh(video, modelReady);
 
@@ -29,26 +32,33 @@ function setup() {
   video.hide();
     allPixels = Array(640);
     
-//    for(let i=0; i<allPixels.length; i++){
-//        allPixels[i] = Array(480);
-//    }
-//    
-//    for (let i=0; i<width; i++){
-//        for (let j=0; j<height; j++){
-//            allPixels[i][j] = false;
-//        }
-//    }
+    for(let i=0; i<allPixels.length; i++){
+        allPixels[i] = Array(480);
+    }
+    
+    for (let i=0; i<640; i++){
+        for (let j=0; j<480; j++){
+            allPixels[i][j] = false;
+        }
+    }
    // print(allPixels);
 }
 
 function modelReady() {
   console.log("Model ready!");
+  model = true;
 }
 
 function draw() {
+    background(255);
+    textSize(20);
+    text('Move your face to color the image!', 10, 500)
+      if(model === false){
+      loading();
+  }
   translate(video.width, 0);
   scale(-1.0,1.0);
-  image(video, 0, 0, width, height);
+  image(video, 0, 0, 640, 480);
  
    // print(predictions);
    loadPixels();
@@ -69,25 +79,28 @@ function faceColor(){
             let x = floor(allpositions[j][0]);
             let y = floor(allpositions[j][1]);
             
-            let ind = (x+y*width)*4;
+            
+            let ind = (640-x+y*640)*4;
+
+             
             pixels[ind+0] = r;
             pixels[ind+1] = g;
             pixels[ind+2] = b;
             pixels[ind+3] = 255;
-         // allPixels[x][y] = true;
-        }
+            allPixels[640-x][y] = true;
         
+        }
     }
     
 }
 
 //this function is from the example code in class
 function bw(){
-    for (var y = 0; y < height; y++) {
-        for (var x = 0; x < width; x++) {
+    for (var y = 0; y < 480; y++) {
+        for (var x = 0; x < 640; x++) {
             
         if (allPixels[x][y] === false){
-          var index = (x + y * width)*4;
+          var index = (x + y * 640)*4;
         
           r = pixels[index+0];
           g = pixels[index+1];
@@ -99,7 +112,22 @@ function bw(){
           pixels[index+0] = avg;
           pixels[index+1] = avg;
           pixels[index+2] = avg;
+            
         }
         }
       }
+}
+
+function loading(){
+    push();
+    textSize(20);
+    fill(0,0,0,x)
+    text("Loading", 320, 240);
+    pop();
+    x += 5;
+    print(x);
+    if(x>255){
+        x=0;
+    }
+    
 }
